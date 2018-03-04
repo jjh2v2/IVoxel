@@ -30,7 +30,7 @@ class UIVoxelBPLibrary : public UBlueprintFunctionLibrary
 	GENERATED_UCLASS_BODY()
 
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Execute Sample function", Keywords = "IVoxel sample test testing"), Category = "IVoxelTesting")
-	static float IVoxelSampleFunction(float Param, UWorld* World, FIntVector Location);
+	static float IVoxelSampleFunction(int Param, UWorld* World, FIntVector Location);
 
 	
 };

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/World.h"
 #include "TestActor.h"
+#include "DrawDebugHelpers.h"
 
 class FOctree
 {
@@ -20,10 +21,17 @@ public:
 	const uint8 Depth;
 	const FIntVector Position;
 
+	bool Value;
+
 	void Destroy();
 	void DestroyChilds();
-	void CreateChilds();
+	void Subdivide();
 	int Size() const;
+	bool IsInOctree(FVector Location);
 
+	FOctree* GetOctree(FVector Location, uint8 MaxDepth = 0);
+	FOctree* GetChildOctree(FVector Location);
+
+	void SubdivideToZero();
 	void TestRender(UWorld* world);
 };
