@@ -50,7 +50,7 @@ bool FOctree::IsInOctree(FVector Location)
 
 int FOctree::Size() const
 {
-	return 16 << Depth;
+	return 8 << Depth;
 }
 
 void FOctree::Destroy()

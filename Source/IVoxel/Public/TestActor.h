@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "RuntimeMeshComponent.h"
 #include "ConstructorHelpers.h"
 
 #include "TestActor.generated.h"
@@ -16,7 +17,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* RootComp;
 
-public:
+	URuntimeMeshComponent* RMC;
+	
 	FOctree* MainOctree;
 
 	ATestActor();
@@ -24,7 +26,9 @@ public:
 	void Tick(float DeltaTime) override;
 	void BeginPlay() override;
 
-
 	UFUNCTION(BlueprintCallable)
 	void SetOctreeValue(FVector Location);
+
+	UFUNCTION(BlueprintCallable)
+	void RenderOctree();
 };

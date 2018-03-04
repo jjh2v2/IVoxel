@@ -8,7 +8,10 @@ ATestActor::ATestActor()
 
 	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 	RootComponent = RootComp;
-	MainOctree = new FOctree(FIntVector(GetActorLocation()), 6);
+	MainOctree = new FOctree(FIntVector(GetActorLocation()), 7);
+
+	RMC = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("RMC"));
+	RMC->SetupAttachment(RootComp);
 }
 
 ATestActor::~ATestActor()
@@ -35,4 +38,9 @@ void ATestActor::Tick(float DeltaTime)
 void ATestActor::SetOctreeValue(FVector Location)
 {
 	MainOctree->GetOctree(Location, 0)->Value = true;
+}
+
+void ATestActor::RenderOctree()
+{
+
 }

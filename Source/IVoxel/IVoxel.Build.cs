@@ -43,7 +43,7 @@ public class IVoxel : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-
+                "RuntimeMeshComponent"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
