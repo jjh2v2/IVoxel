@@ -16,12 +16,17 @@ public:
 	* 01 Below 45 
 	* 23 Below 67
 	*/
+	ATestActor* World;
 	FOctree* Childs[8];
+	FOctree* Mother;
 	bool HasChilds;
 	const uint8 Depth;
 	const FIntVector Position;
 
 	bool Value;
+
+	//Whatever this octree is not actually block, But used for LOD
+	bool IsFake;
 
 	void Destroy();
 	void DestroyChilds();
@@ -31,7 +36,9 @@ public:
 
 	FOctree* GetOctree(FVector Location, uint8 MaxDepth = 0);
 	FOctree* GetChildOctree(FVector Location);
+	void GetChildOctrees(TSet<FOctree*> &RetValue, uint8 MaxDepth = 0);
 
 	void SubdivideToZero();
 	void TestRender(UWorld* world);
+	void OptimizeOrMakeLod();
 };

@@ -119,6 +119,15 @@ FOctree* FOctree::GetChildOctree(FVector Location)
 	return Childs[Result];
 }
 
+void FOctree::GetChildOctrees(TSet<FOctree*>& RetValue, uint8 MaxDepth)
+{
+	RetValue.Add(this);
+	for (auto& child : Childs)
+	{
+		GetChildOctrees(RetValue, MaxDepth);
+	}
+}
+
 void FOctree::TestRender(UWorld* world)
 {
 	DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 10);
@@ -133,4 +142,9 @@ void FOctree::TestRender(UWorld* world)
 			child->TestRender(world);
 		}
 	}
+}
+
+void FOctree::OptimizeOrMakeLod()
+{
+
 }

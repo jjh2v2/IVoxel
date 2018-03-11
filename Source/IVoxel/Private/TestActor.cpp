@@ -8,15 +8,11 @@ ATestActor::ATestActor()
 
 	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 	RootComponent = RootComp;
-	MainOctree = new FOctree(FIntVector(GetActorLocation()), 7);
 
 	RMC = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("RMC"));
 	RMC->SetupAttachment(RootComp);
-}
 
-ATestActor::~ATestActor()
-{
-	MainOctree->Destroy();
+	Manager = new IVoxelManager(this, 16);
 }
 
 void ATestActor::BeginPlay()
@@ -27,20 +23,13 @@ void ATestActor::BeginPlay()
 void ATestActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	static int TickCount = 0;
-	if (TickCount % 10 == 0)
-	{
-		MainOctree->TestRender(GetWorld());
-	}
-	TickCount++;
 }
 
 void ATestActor::SetOctreeValue(FVector Location)
 {
-	MainOctree->GetOctree(Location, 0)->Value = true;
 }
 
-void ATestActor::RenderOctree()
+void ATestActor::RenderOctree(FVector Location, int RenderDepth, int ChildDepth)
 {
-
+	
 }

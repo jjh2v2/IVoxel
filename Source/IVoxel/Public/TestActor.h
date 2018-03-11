@@ -6,9 +6,10 @@
 #include "Components/StaticMeshComponent.h"
 #include "RuntimeMeshComponent.h"
 #include "ConstructorHelpers.h"
+#include "IVoxelManager.h"
 
 #include "TestActor.generated.h"
-class FOctree;
+
 UCLASS()
 class ATestActor : public AActor 
 {
@@ -19,10 +20,10 @@ public:
 
 	URuntimeMeshComponent* RMC;
 	
-	FOctree* MainOctree;
+	IVoxelManager* Manager;
 
 	ATestActor();
-	~ATestActor();
+
 	void Tick(float DeltaTime) override;
 	void BeginPlay() override;
 
@@ -30,5 +31,5 @@ public:
 	void SetOctreeValue(FVector Location);
 
 	UFUNCTION(BlueprintCallable)
-	void RenderOctree();
+	void RenderOctree(FVector Location, int RenderDepth, int ChildDepth);
 };
