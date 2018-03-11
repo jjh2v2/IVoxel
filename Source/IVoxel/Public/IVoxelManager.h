@@ -3,14 +3,18 @@
 #include "CoreMinimal.h"
 #include "Octree.h"
 #include "RuntimeMeshComponent.h"
+#include "RuntimeMeshShapeGenerator.h"
 #include "TestActor.h"
+class ATestActor;
+class FOctree;
 
-class FOctree {};
 class IVoxelManager
 {
+private:
+	ATestActor * World;
+
 public:
-	const ATestActor* World;
-	FOctree* MainOctree;
+	FOctree * MainOctree;
 
 	TSet<FOctree*> OctreeToOptimize;
 

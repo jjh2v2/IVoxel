@@ -28,8 +28,8 @@ public:
 	void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetOctreeValue(FVector Location);
+	void SetOctreeValue(FVector Location, int Depth, bool Value, FColor Color);
 
 	UFUNCTION(BlueprintCallable)
-	void RenderOctree(FVector Location, int RenderDepth, int ChildDepth);
+	void RenderOctree(FVector Location, int RenderDepth, int ChildDepth, bool Debug);
 };

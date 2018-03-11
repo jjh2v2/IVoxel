@@ -1,7 +1,7 @@
 #include "Octree.h"
 
 FOctree::FOctree(FIntVector Position, uint8 Depth)
-	: Depth(Depth), Position(Position), HasChilds(false), Value(false)
+	: Depth(Depth), Position(Position), HasChilds(false), Data(FOctreeData())
 {
 
 }
@@ -36,6 +36,16 @@ void FOctree::Subdivide()
 	Childs[6] = new FOctree(Position + FIntVector(+s, -s, -s), Depth - 1);
 	Childs[7] = new FOctree(Position + FIntVector(-s, -s, -s), Depth - 1);
 
+	if (GetValue())
+	{
+		for (auto& child : Childs)
+		{
+			child->SetValue(GetValue());
+			child->SetColor(GetColor());
+		}
+		SetValue(false);
+	}
+	
 	HasChilds = true;
 }
 
@@ -50,7 +60,7 @@ bool FOctree::IsInOctree(FVector Location)
 
 int FOctree::Size() const
 {
-	return 8 << Depth;
+	return 4 << Depth;
 }
 
 void FOctree::Destroy()
@@ -121,17 +131,19 @@ FOctree* FOctree::GetChildOctree(FVector Location)
 
 void FOctree::GetChildOctrees(TSet<FOctree*>& RetValue, uint8 MaxDepth)
 {
+	if (Depth < MaxDepth) return;
 	RetValue.Add(this);
+	if (!HasChilds) return;
 	for (auto& child : Childs)
 	{
-		GetChildOctrees(RetValue, MaxDepth);
+		child->GetChildOctrees(RetValue, MaxDepth);
 	}
 }
 
 void FOctree::TestRender(UWorld* world)
 {
 	DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 10);
-	if (Value)
+	if (GetValue())
 	{
 		DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 10, 0, 2);
 	}
@@ -142,6 +154,28 @@ void FOctree::TestRender(UWorld* world)
 			child->TestRender(world);
 		}
 	}
+}
+
+void FOctree::SetValue(bool SetValue)
+{
+	if (HasChilds)
+	{
+		DestroyChilds();
+	}
+	Data.Value = SetValue;
+}
+void FOctree::SetColor(FColor SetValue)
+{
+	Data.Color = SetValue;
+}
+bool FOctree::GetValue()
+{
+	return Data.Value;
+}
+
+FColor FOctree::GetColor()
+{
+	return Data.Color;
 }
 
 void FOctree::OptimizeOrMakeLod()

@@ -27,22 +27,17 @@ void IVoxelManager::PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, u
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
 	TArray<FVector> Normals;
-
+	TArray<FVector2D> UVs;
+	TArray<FRuntimeMeshTangent> Tangent;
+	TArray<FColor> VertexColor;
 	for (auto& Octree : Octrees)
 	{
-		if (!Octree->IsFake && Octree->Value)
+		if (Octree->GetValue())
 		{
-			MakeCube(Octree->Size/2, FVector(Octree->Position), Vertices, Triangles, Normals);
+			URuntimeMeshShapeGenerator::CreateBoxMesh(Octree->Size(), FVector(Octree->Position), Octree->GetColor(), Vertices, Triangles, Normals, UVs, Tangent, VertexColor);
 		}
 	}
-	if (World->RMC->DoesSectionExist(0))
-	{
-		World->RMC->CreateMeshSection(0, Vertices, Triangles, Normals);
-	}
-	else
-	{
-		World->RMC->UpdateMeshSection(0, Vertices, Triangles, Normals);
-	}
+	World->RMC->CreateMeshSection(0, Vertices, Triangles, Normals, UVs, VertexColor, Tangent, true);
 }
 
 void IVoxelManager::MakeCube(int Radius, FVector Location, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector>& Normals)
@@ -69,8 +64,9 @@ void IVoxelManager::MakeCube(int Radius, FVector Location, TArray<FVector>& Vert
 	Normals.Add(FVector(0, 0, 1));
 	Normals.Add(FVector(0, 0, 1));
 	Triangles.Add(0 + offset);
+	Triangles.Add(3 + offset);
 	Triangles.Add(1 + offset);
+	Triangles.Add(0 + offset);
 	Triangles.Add(2 + offset);
 	Triangles.Add(3 + offset);
-
 }

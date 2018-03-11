@@ -5,8 +5,19 @@
 #include "TestActor.h"
 #include "DrawDebugHelpers.h"
 
+struct FOctreeData
+{
+	bool Value;
+	FColor Color;
+
+	FOctreeData() : Value(false), Color(FColor(0))
+	{ };
+};
+
 class FOctree
 {
+private:
+	FOctreeData Data;
 public:
 	FOctree(FIntVector Position, uint8 Depth);
 	~FOctree();
@@ -16,14 +27,10 @@ public:
 	* 01 Below 45 
 	* 23 Below 67
 	*/
-	ATestActor* World;
 	FOctree* Childs[8];
-	FOctree* Mother;
 	bool HasChilds;
 	const uint8 Depth;
 	const FIntVector Position;
-
-	bool Value;
 
 	//Whatever this octree is not actually block, But used for LOD
 	bool IsFake;
@@ -41,4 +48,9 @@ public:
 	void SubdivideToZero();
 	void TestRender(UWorld* world);
 	void OptimizeOrMakeLod();
+
+	void SetValue(bool SetValue);
+	void SetColor(FColor SetValue);
+	bool GetValue();
+	FColor GetColor();
 };
