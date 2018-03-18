@@ -1,10 +1,10 @@
 #include "IVoxelManager.h"
 
 
-IVoxelManager::IVoxelManager(ATestActor* World, uint8 OctreeDepth) 
-	: World(World), MainOctree(new FOctree(FIntVector(0), OctreeDepth))
+IVoxelManager::IVoxelManager(ATestActor* World, UWorldGenerator* WorldGenerator, uint8 OctreeDepth)
+	: World(World), MainOctree(new FOctree(FIntVector(0), OctreeDepth, nullptr)), WorldGenerator(WorldGenerator)
 {
-
+	
 }
 
 IVoxelManager::~IVoxelManager()
@@ -18,7 +18,7 @@ void IVoxelManager::Tick()
 
 }
 
-void IVoxelManager::PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, uint8 RenderDepth)
+void IVoxelManager::PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, uint8 RenderDepth, int RenderSection)
 {
 	FOctree* Chunk = MainOctree->GetOctree(OctreeLocation, RenderSize);
 	TSet<FOctree*> Octrees;
@@ -32,41 +32,25 @@ void IVoxelManager::PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, u
 	TArray<FColor> VertexColor;
 	for (auto& Octree : Octrees)
 	{
-		if (Octree->GetValue())
+		if (Octree->GetValue() && !Octree->IsFake)
 		{
 			URuntimeMeshShapeGenerator::CreateBoxMesh(Octree->Size(), FVector(Octree->Position), Octree->GetColor(), Vertices, Triangles, Normals, UVs, Tangent, VertexColor);
 		}
 	}
-	World->RMC->CreateMeshSection(0, Vertices, Triangles, Normals, UVs, VertexColor, Tangent, true);
+	World->RMC->CreateMeshSection(RenderSection, Vertices, Triangles, Normals, UVs, VertexColor, Tangent, true);
 }
 
-void IVoxelManager::MakeCube(int Radius, FVector Location, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector>& Normals)
+void IVoxelManager::GenerateWorld(FVector OctreeLocation, uint8 Depth, uint8 GenDepth)
 {
-	int offset = Vertices.Num();
+	TSet<FOctree*> ToOptimize;
+	FOctree* Octree = MainOctree->GetOctree(OctreeLocation, Depth);
+	Octree->GenerateWorld(WorldGenerator, GenDepth, ToOptimize);
 
-	FVector Vert[8];
-	Vert[0] = FVector(+Radius, +Radius, +Radius) + Location;
-	Vert[1] = FVector(-Radius, +Radius, +Radius) + Location;
-	Vert[2] = FVector(+Radius, -Radius, +Radius) + Location;
-	Vert[3] = FVector(-Radius, -Radius, +Radius) + Location;
-	Vert[4] = FVector(+Radius, +Radius, -Radius) + Location;
-	Vert[5] = FVector(-Radius, +Radius, -Radius) + Location;
-	Vert[6] = FVector(+Radius, -Radius, -Radius) + Location;
-	Vert[7] = FVector(-Radius, -Radius, -Radius) + Location;
-
-	//Up
-	Vertices.Add(Vert[0]);
-	Vertices.Add(Vert[1]);
-	Vertices.Add(Vert[2]);
-	Vertices.Add(Vert[3]);
-	Normals.Add(FVector(0, 0, 1));
-	Normals.Add(FVector(0, 0, 1));
-	Normals.Add(FVector(0, 0, 1));
-	Normals.Add(FVector(0, 0, 1));
-	Triangles.Add(0 + offset);
-	Triangles.Add(3 + offset);
-	Triangles.Add(1 + offset);
-	Triangles.Add(0 + offset);
-	Triangles.Add(2 + offset);
-	Triangles.Add(3 + offset);
+	for (auto& Octree : ToOptimize)
+	{
+		if (Octree)
+		{
+			Octree->OptimizeOrMakeLod();
+		}
+	}
 }

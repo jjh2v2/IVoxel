@@ -10,7 +10,7 @@ UIVoxelBPLibrary::UIVoxelBPLibrary(const FObjectInitializer& ObjectInitializer)
 
 float UIVoxelBPLibrary::IVoxelSampleFunction(int Param, UWorld* World, FIntVector Location)
 {
-	FOctree* MainOctree = new FOctree(Location, Param);
+	FOctree* MainOctree = new FOctree(Location, Param, nullptr);
 	UE_LOG(LogGarbage, Warning, TEXT("asdf"));
 	MainOctree->Subdivide();
 	

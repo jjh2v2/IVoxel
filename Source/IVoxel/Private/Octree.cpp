@@ -1,7 +1,7 @@
 #include "Octree.h"
 
-FOctree::FOctree(FIntVector Position, uint8 Depth)
-	: Depth(Depth), Position(Position), HasChilds(false), Data(FOctreeData())
+FOctree::FOctree(FIntVector Position, uint8 Depth, FOctree* Mother)
+	: Depth(Depth), Position(Position), HasChilds(false), Data(FOctreeData()), IsFake(false), Mother(Mother)
 {
 
 }
@@ -27,14 +27,14 @@ void FOctree::Subdivide()
 	* 2 3    6 7
 	*/
 
-	Childs[0] = new FOctree(Position + FIntVector(+s, +s, +s), Depth - 1);
-	Childs[1] = new FOctree(Position + FIntVector(-s, +s, +s), Depth - 1);
-	Childs[2] = new FOctree(Position + FIntVector(+s, -s, +s), Depth - 1);
-	Childs[3] = new FOctree(Position + FIntVector(-s, -s, +s), Depth - 1);
-	Childs[4] = new FOctree(Position + FIntVector(+s, +s, -s), Depth - 1);
-	Childs[5] = new FOctree(Position + FIntVector(-s, +s, -s), Depth - 1);
-	Childs[6] = new FOctree(Position + FIntVector(+s, -s, -s), Depth - 1);
-	Childs[7] = new FOctree(Position + FIntVector(-s, -s, -s), Depth - 1);
+	Childs[0] = new FOctree(Position + FIntVector(+s, +s, +s), Depth - 1, this);
+	Childs[1] = new FOctree(Position + FIntVector(-s, +s, +s), Depth - 1, this);
+	Childs[2] = new FOctree(Position + FIntVector(+s, -s, +s), Depth - 1, this);
+	Childs[3] = new FOctree(Position + FIntVector(-s, -s, +s), Depth - 1, this);
+	Childs[4] = new FOctree(Position + FIntVector(+s, +s, -s), Depth - 1, this);
+	Childs[5] = new FOctree(Position + FIntVector(-s, +s, -s), Depth - 1, this);
+	Childs[6] = new FOctree(Position + FIntVector(+s, -s, -s), Depth - 1, this);
+	Childs[7] = new FOctree(Position + FIntVector(-s, -s, -s), Depth - 1, this);
 
 	if (GetValue())
 	{
@@ -60,7 +60,7 @@ bool FOctree::IsInOctree(FVector Location)
 
 int FOctree::Size() const
 {
-	return 4 << Depth;
+	return 2 << Depth;
 }
 
 void FOctree::Destroy()
@@ -74,6 +74,7 @@ void FOctree::Destroy()
 
 void FOctree::DestroyChilds()
 {
+	check(HasChilds);
 	for (auto& child : Childs)
 	{
 		child->Destroy();
@@ -142,10 +143,13 @@ void FOctree::GetChildOctrees(TSet<FOctree*>& RetValue, uint8 MaxDepth)
 
 void FOctree::TestRender(UWorld* world)
 {
-	DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 10);
 	if (GetValue())
 	{
-		DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 10, 0, 2);
+		DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 1, 0, 2);
+	}
+	else
+	{
+		DrawDebugBox(world, FVector(Position), FVector(Size()), FColor(1, 0, 0), false, 1);
 	}
 	if (HasChilds)
 	{
@@ -163,6 +167,7 @@ void FOctree::SetValue(bool SetValue)
 		DestroyChilds();
 	}
 	Data.Value = SetValue;
+
 }
 void FOctree::SetColor(FColor SetValue)
 {
@@ -180,5 +185,98 @@ FColor FOctree::GetColor()
 
 void FOctree::OptimizeOrMakeLod()
 {
+	bool Changed = false;
+	//TODO Make Lod
+	if (HasChilds)
+	{
+		//TODO Optimize this calculation
+		int Flag = 0;
+		int Bit = 1;
+		TSet<FColor> Colors;
+		FColor FinalColor = FColor(0,0,0,1);
+		for (auto& child : Childs)
+		{
+			if (child->GetValue())
+			{
+				Flag = Flag | Bit;
+				Colors.Add(child->GetColor());
+			}
+			Bit = Bit << 1;
+		}
+		if (Colors.Num() != 0)
+		{
+			int r = 0, g = 0, b = 0, a = 0, count = 0;
+			for (auto& color : Colors)
+			{
+				r += color.R;
+				g += color.G;
+				b += color.B;
+				a += color.A;
+				count++;
+			}
+			FinalColor = FColor(r / count, g / count, b / count, a / count);
+		}
+		
+		switch (Flag)
+		{
+		case 255: //11111111
+			SetValue(true);
+			SetColor(FinalColor);
+			Changed = true;
+			break;
+		case 0:   //00000000
+			SetValue(false);
+			Changed = true;
+			break;
+		default:
+			break;
+		}
+	}
+	if (Mother && Changed)
+	{
+		Mother->OptimizeOrMakeLod();
+	}
+}
 
+void FOctree::GenerateWorld(UWorldGenerator* WorldGenerator, uint8 Depth, TSet<FOctree*> &ToOptimize)
+{
+	if (this->Depth < Depth) return;
+	bool Value = false;
+	FColor Color;
+	WorldGenerator->GetValueAndColor(Position, Value, Color);
+
+	if (this->Depth == Depth)
+	{
+		SetValue(Value);
+		SetColor(Color);
+		ToOptimize.Add(this->Mother);
+		return;
+	}
+	Subdivide();
+	for (auto& child : Childs)
+	{
+		child->GenerateWorld(WorldGenerator, Depth, ToOptimize);
+	}
+	/*
+	if (Value)
+	{
+		if (this->Depth == Depth)
+		{
+			SetValue(Value);
+			SetColor(Color);
+
+			OptimizeOrMakeLod();
+			return;
+		}
+
+		Subdivide();
+		for (auto& child : Childs)
+		{
+			child->GenerateWorld(WorldGenerator, Depth);
+		}
+	}
+	else
+	{
+		SetValue(Value);
+	}*/
 }

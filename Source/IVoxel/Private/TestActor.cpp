@@ -12,12 +12,19 @@ ATestActor::ATestActor()
 	RMC = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("RMC"));
 	RMC->SetupAttachment(RootComp);
 	RMC->SetMaterial(0, CubeMaterial.Object);
-	Manager = new IVoxelManager(this, 8);
+
+	
 }
 
 void ATestActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (WorldGenerator)
+	{
+		InstancedGenerator = NewObject<UWorldGenerator>((UObject*)GetTransientPackage(), WorldGenerator);
+	}
+	Manager = new IVoxelManager(this, InstancedGenerator, 14);
 }
 
 void ATestActor::Tick(float DeltaTime)
@@ -30,6 +37,7 @@ void ATestActor::SetOctreeValue(FVector Location, int Depth, bool Value, FColor 
 	FOctree* Octree = Manager->MainOctree->GetOctree(Location, Depth);
 	Octree->SetValue(Value);
 	Octree->SetColor(Color);
+	Octree->Mother->OptimizeOrMakeLod();
 }
 
 void ATestActor::RenderOctree(FVector Location, int RenderDepth, int ChildDepth, bool Debug)
@@ -40,6 +48,16 @@ void ATestActor::RenderOctree(FVector Location, int RenderDepth, int ChildDepth,
 	}
 	else
 	{
-		Manager->PolygonizeOctree(Location, RenderDepth, ChildDepth);
+		Manager->PolygonizeOctree(Location, RenderDepth, ChildDepth, 0);
 	}
+}
+
+void ATestActor::GenerateWorld(FVector Location, int Depth, int GenDepth)
+{
+	if (!WorldGenerator)
+	{
+		UE_LOG(LogGarbage, Warning, TEXT("World generator is null"));
+		return;
+	}
+	Manager->GenerateWorld(Location, Depth, GenDepth);
 }

@@ -4,6 +4,7 @@
 #include "Engine/World.h"
 #include "TestActor.h"
 #include "DrawDebugHelpers.h"
+#include "WorldGenerator.h"
 
 struct FOctreeData
 {
@@ -19,14 +20,15 @@ class FOctree
 private:
 	FOctreeData Data;
 public:
-	FOctree(FIntVector Position, uint8 Depth);
+	FOctree(FIntVector Position, uint8 Depth, FOctree* Mother);
 	~FOctree();
-
+	
 	/*
 	* Childs Location
 	* 01 Below 45 
 	* 23 Below 67
 	*/
+	FOctree* Mother;
 	FOctree* Childs[8];
 	bool HasChilds;
 	const uint8 Depth;
@@ -48,6 +50,7 @@ public:
 	void SubdivideToZero();
 	void TestRender(UWorld* world);
 	void OptimizeOrMakeLod();
+	void GenerateWorld(UWorldGenerator* WorldGenerator, uint8 Depth, TSet<FOctree*> &ToOptimize);
 
 	void SetValue(bool SetValue);
 	void SetColor(FColor SetValue);

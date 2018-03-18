@@ -18,6 +18,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* RootComp;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UWorldGenerator> WorldGenerator;
+
+	UWorldGenerator* InstancedGenerator = nullptr;
+
 	URuntimeMeshComponent* RMC;
 	
 	IVoxelManager* Manager;
@@ -32,4 +37,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RenderOctree(FVector Location, int RenderDepth, int ChildDepth, bool Debug);
+
+	UFUNCTION(BlueprintCallable)
+	void GenerateWorld(FVector Location, int Depth, int GenDepth);
 };

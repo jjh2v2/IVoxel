@@ -4,9 +4,13 @@
 #include "Octree.h"
 #include "RuntimeMeshComponent.h"
 #include "RuntimeMeshShapeGenerator.h"
+#include "WorldGenerator.h"
 #include "TestActor.h"
+#include "FlatWorldGenerator.h"
+
 class ATestActor;
 class FOctree;
+class UWorldGenerator;
 
 class IVoxelManager
 {
@@ -18,10 +22,11 @@ public:
 
 	TSet<FOctree*> OctreeToOptimize;
 
-	IVoxelManager(ATestActor* World, uint8 OctreeDepth);
+	UWorldGenerator* WorldGenerator;
+
+	IVoxelManager(ATestActor* World, UWorldGenerator* WorldGenerator, uint8 OctreeDepth);
 	~IVoxelManager();
 	void Tick();
-	void PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, uint8 RenderDepth);
-private:
-	void MakeCube(int Radius, FVector Location, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector>& Normals);
+	void PolygonizeOctree(FVector OctreeLocation, uint8 RenderSize, uint8 RenderDepth, int RenderSection);
+	void GenerateWorld(FVector OctreeLocation, uint8 Depth, uint8 DepthSize);
 };

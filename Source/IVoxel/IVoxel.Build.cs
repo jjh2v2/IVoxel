@@ -20,7 +20,7 @@ public class IVoxel : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"IVoxel/Private",
-				
+				"IVoxel/WorldGenerator",
 				// ... add other private include paths required here ...
 			}
 			);
